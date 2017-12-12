@@ -163,6 +163,7 @@ class ImageView(QtGui.QWidget):
         self.playTimer = QtCore.QTimer()
         self.playRate = 0
         self.lastPlayTime = 0
+        self.playInLoop = True
         
         self.normRgn = LinearRegionItem()
         self.normRgn.setZValue(0)
@@ -361,6 +362,10 @@ class ImageView(QtGui.QWidget):
         self.lastPlayTime = ptime.time()
         if not self.playTimer.isActive():
             self.playTimer.start(16)
+
+    def playInLoop(flag):
+        """Set to True to play in loop"""
+        self.playInLoop = flag
             
     def autoLevels(self):
         """Set the min/max intensity levels automatically to match the image data."""
@@ -469,8 +474,12 @@ class ImageView(QtGui.QWidget):
         n = int(self.playRate * dt)
         if n != 0:
             self.lastPlayTime += (float(n)/self.playRate)
-            if self.currentIndex+n > self.image.shape[0]:
-                self.play(0)
+            if self.currentIndex+n >=  self.image.shape[0]:
+                if self.playInLoop:
+                    self.setCurrentIndex(0)
+                    self.lastPlayTime = ptime.time()
+                else:
+                    self.play(0)
             self.jumpFrames(n)
         
     def setCurrentIndex(self, ind):
